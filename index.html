@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotter Days, Heavier Downpours</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="toc" aria-label="Sections">
+  <a href="#s-threshold">1 · Crossing 2°C</a>
+  <a href="#s-heat">2 · Heat days</a>
+  <a href="#s-map">3 · Where it changes</a>
+  <a href="#s-regions">4 · Regions</a>
+  <a href="#s-tail">5 · Why</a>
+  <a href="#s-writeup">Writeup</a>
+</nav>
+<main>
+  <header class="hero">
+    <p class="kicker">DSC 106 Final Project · Prototype</p>
+    <h1>Hotter Days, Heavier Downpours</h1>
+    <p class="lede">How climate change is projected to change extreme heat and extreme rainfall, from the global 2°C target down to the days people actually live through.</p>
+    <p class="muted small">Draft text. [Team: rewrite the story text on this page in your own words.]</p>
+  </header>
+
+  <!-- ===== Section 1: Project 3 crossing map ===== -->
+  <section id="s-threshold" class="story">
+    <div class="step-text">
+      <p class="step-num">1</p>
+      <h2>When will your part of the world cross 2°C?</h2>
+      <p>Climate targets are global averages, but warming does not arrive everywhere at once. Pick a warming level and an emissions scenario, then find a place you know.</p>
+    </div>
+    <p id="subtitle" class="muted"></p>
+
+    <section class="controls" aria-label="Controls for the crossing map">
+      <div class="control"><span class="label">Warming level</span><div id="thresholds" class="segmented" role="group" aria-label="Warming level"></div></div>
+      <div class="control"><span class="label">Emissions scenario</span><div id="scenarios" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
+      <div class="control"><label class="label" for="place">Place</label><select id="place"></select></div>
+    </section>
+
+    <p id="headline" class="headline" aria-live="polite"></p>
+
+    <section class="layout">
+      <figure class="map-wrap">
+        <canvas id="map" aria-label="World map of the year each place crosses the selected warming level"></canvas>
+        <div id="legend"></div>
+        <figcaption class="muted">Hover for details. Click anywhere to select that place.</figcaption>
+      </figure>
+      <figure class="panel">
+        <h3 id="rangeTitle"></h3>
+        <p class="muted small0">Dots are the model median. Bars run from the earliest to the latest model.</p>
+        <svg id="range"></svg>
+      </figure>
+    </section>
+
+    <section class="panel wide">
+      <h3 id="lineTitle"></h3>
+      <svg id="line"></svg>
+    </section>
+    <p id="method" class="muted small"></p>
+  </section>
+
+  <!-- ===== Section 2: heat days over time ===== -->
+  <section id="s-heat" class="story">
+    <div class="step-text">
+      <p class="step-num">2</p>
+      <h2>A 2°C average means many more extreme days</h2>
+      <p>We call a day "extreme heat" when it is hotter than that place's hottest 5% of days from <span class="fill" data-fact="baseline">1985–2014</span>. By definition, that is about <b class="fill" data-fact="baseDays">18</b> days a year in the baseline. Hover the chart to see how the count climbs.</p>
+    </div>
+    <div class="controls">
+      <div class="control"><span class="label">Show</span><div id="heatScen" class="segmented" role="group" aria-label="Scenarios shown"></div></div>
+    </div>
+    <p id="heatHeadline" class="headline" aria-live="polite"></p>
+    <figure class="panel">
+      <h3>Extreme heat days per year, land average</h3>
+      <p class="muted small0">Bold lines are 11-year rolling averages; faint lines show individual years.</p>
+      <svg id="heatLine"></svg>
+    </figure>
+  </section>
+
+  <!-- ===== Section 3: where heat and rain change ===== -->
+  <section id="s-map" class="story">
+    <div class="step-text">
+      <p class="step-num">3</p>
+      <h2>Where extremes change the most</h2>
+      <p>Switch between heat and heavy rain. Places with steady climates pass their old extremes fastest, and rain does not change the same way everywhere.</p>
+    </div>
+    <div class="controls">
+      <div class="control"><span class="label">Extreme</span><div id="mapVar" class="segmented" role="group" aria-label="Type of extreme"></div></div>
+      <div class="control"><span class="label">Emissions scenario</span><div id="mapScen" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
+    </div>
+    <p id="mapHeadline" class="headline" aria-live="polite"></p>
+    <figure class="map-wrap solo">
+      <canvas id="xmap" aria-label="World map of the change in extreme days"></canvas>
+      <div id="xlegend"></div>
+      <figcaption id="xcaption" class="muted"></figcaption>
+    </figure>
+  </section>
+
+  <!-- ===== Section 4: regions ===== -->
+  <section id="s-regions" class="story">
+    <div class="step-text">
+      <p class="step-num">4</p>
+      <h2>Every region heats up, but emissions decide by how much</h2>
+      <p>Choose a region to see its extreme heat days by decade under both scenarios. The scale stays the same, so regions can be compared.</p>
+    </div>
+    <div class="controls">
+      <div class="control"><span class="label">Region</span><div id="regionPick" class="segmented" role="group" aria-label="Region"></div></div>
+    </div>
+    <p id="regionHeadline" class="headline" aria-live="polite"></p>
+    <figure class="panel">
+      <h3 id="regionTitle"></h3>
+      <svg id="regionBars"></svg>
+    </figure>
+    <p id="xmethod" class="muted small"></p>
+  </section>
+
+  <!-- ===== Section 5: why the tail grows ===== -->
+  <section id="s-tail" class="story">
+    <div class="step-text">
+      <p class="step-num">5</p>
+      <h2>Why a few degrees means so many more extreme days</h2>
+      <p>These curves show every summer daily high in California, averaged over the state. When the whole curve slides a few degrees warmer, the slice past the old "hottest 5%" line grows much faster than the average does. Drag the line to try other cutoffs.</p>
+    </div>
+    <div class="controls">
+      <label class="slider control"><span class="label">Cutoff: <b id="tailValue"></b></span>
+        <input id="tailCut" type="range" step="0.25" aria-label="Temperature cutoff"></label>
+      <button id="tailReset" type="button">Reset to old top 5%</button>
+    </div>
+    <p id="tailHeadline" class="headline" aria-live="polite"></p>
+    <figure class="panel">
+      <h3>California summer daily highs (June–August)</h3>
+      <svg id="tailChart"></svg>
+    </figure>
+  </section>
+
+  <!-- ===== Prototype writeup ===== -->
+  <section id="s-writeup" class="writeup" aria-labelledby="writeupTitle">
+    <h2 id="writeupTitle">Prototype writeup</h2>
+    <h3>What have we done so far?</h3>
+    <p class="todo">[Team: at least 4 sentences.]</p>
+    <h3>What will be the most challenging part of our project to design, and why?</h3>
+    <p class="todo">[Team: at least 4 sentences.]</p>
+  </section>
+
+  <div id="tooltip" role="status" hidden></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="crossing.js"></script>
+<script src="extremes.js"></script>
+</body>
+</html>
