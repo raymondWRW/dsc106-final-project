@@ -20,7 +20,7 @@
     <p class="kicker">DSC 106 Final Project · Prototype</p>
     <h1>Hotter Days, Heavier Downpours</h1>
     <p class="lede">How climate change is projected to change extreme heat and extreme rainfall, from the global 2°C target down to the days people actually live through.</p>
-    <p class="muted small">Draft text. [Team: rewrite the story text on this page in your own words.]</p>
+    <p class="muted small">This page explores how a few degrees of global warming can lead to many more extreme hot days and heavy rainfall days. Scroll through the five sections and interact with each chart to see how the changes differ by place and by emissions scenario. All projections come from CMIP6 climate model simulations.</p>
   </header>
 
   <!-- ===== Section 1: Project 3 crossing map ===== -->
@@ -138,9 +138,9 @@
   <section id="s-writeup" class="writeup" aria-labelledby="writeupTitle">
     <h2 id="writeupTitle">Prototype writeup</h2>
     <h3>What have we done so far?</h3>
-    <p class="todo">[Team: at least 4 sentences.]</p>
+      <p>In Project 3 we used monthly temperature values. However, monthly values can hide extreme temperatures that happen within a month. In our final project we use daily temperature and precipitation values from the MPI-ESM1-2-LR model. An extreme hot day is defined as a day whose high temperature is higher than 95% of that location’s daily highs from 1985-2014. Similarly, a heavy rainfall day is one with more rain than 95% of that location’s wet days. As each location is compared to itself, 35°C may be considered an extreme temperature in Seattle but not in Phoenix. Because processing daily data for the entire planet caused Colab to run out of memory, we processed one decade at a time and saved the outputs to a JSON file that the website reads. There are 5 D3 components on the website. These include: a map showing when each location will reach 1.5/2/3°C; a line graph showing the number of extreme hot days on land between 1950 and 2100; a map showing the change in extreme hot days and heavy rainfall days globally; bar graphs showing extreme hot days per decade in 5 different regions; and a chart of California summer temperatures in which users can move the previous top 5% threshold. We found that land averages around 18 extreme hot days per year in the baseline period. By 2071-2100, this increases to around 59 days under scenario SSP2-4.5, and around 103 days under scenario SSP5-8.5.</p>
     <h3>What will be the most challenging part of our project to design, and why?</h3>
-    <p class="todo">[Team: at least 4 sentences.]</p>
+      <p>Connecting the first section to the rest of the page will be the most challenging part to design. The 2°C map measures warming since 1850-1900, whereas the extreme day charts use 1985-2014 as their baseline, so readers may be confused when moving between them. Because of how extreme days are defined, it also seems surprising that tropical land areas gain more extreme days than colder regions. This happens because regions with stable temperatures pass their previous top 5% with relatively small amounts of warming. Labels on the chart are needed to explain this so that the reader does not conclude that the map is incorrect. Furthermore, as only one model has been used to produce the daily data charts, we cannot yet show the differences between models, as we can with the Project 3 map. When more models are added, we must find a way to show these differences without cluttering the graphs. In addition, fitting more daily data within Colab’s memory limits will be challenging.</p>
   </section>
 
   <div id="tooltip" role="status" hidden></div>
