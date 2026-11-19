@@ -6,6 +6,13 @@
   const DESC = { ssp245: "Middle road", ssp585: "High emissions" };
   const SCEN = ["ssp245", "ssp585"];
   const tip = document.getElementById("tooltip");
+  // Chart intro animations: run once when a chart scrolls into view (skipped for reduced motion)
+  const STILL = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function onFirstView(el, fn) {
+    if (STILL || !("IntersectionObserver" in window)) return fn(false);
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); fn(true); } }, { threshold: 0.35 });
+    io.observe(el);
+  }
   const sum = a => a.reduce((x, y) => x + y, 0);
   const signed = v => `${v >= 0 ? "+" : "−"}${Math.abs(v)}`;
   const latName = v => `${Math.abs(v).toFixed(0)}°${v >= 0 ? "N" : "S"}`;
@@ -67,6 +74,7 @@
     const refresh = segmented("#heatScen", SCEN.map(id => ({ id, label: LABELS[id], desc: DESC[id], color: COLORS[id] })),
       d => show.has(d.id), d => { show.has(d.id) && show.size > 1 ? show.delete(d.id) : show.add(d.id); draw(); });
 
+    let played = false, clipRect = null, endLabels = null, fullW = 0;
     function draw() {
       refresh();
       const shown = SCEN.filter(sc => show.has(sc));
@@ -91,19 +99,23 @@
       const gen = (from, to) => d3.line().defined((d, i) => d != null && years[i] >= from && years[i] <= to)
         .x((_, i) => x(years[i])).y(d => y(d));
       const past = lines[0];
-      svg.append("path").datum(past.raw).attr("d", gen(1950, 2014)).attr("fill", "none").attr("stroke", COLORS.historical).attr("stroke-width", 1).attr("opacity", 0.35);
-      svg.append("path").datum(past.smooth).attr("d", gen(1950, 2014)).attr("fill", "none").attr("stroke", COLORS.historical).attr("stroke-width", 2.2);
+      fullW = w;
+      clipRect = svg.append("defs").append("clipPath").attr("id", "heatClip").append("rect")
+        .attr("x", 0).attr("y", 0).attr("height", h).attr("width", played ? w : m.l);
+      const plot = svg.append("g").attr("clip-path", "url(#heatClip)");
+      plot.append("path").datum(past.raw).attr("d", gen(1950, 2014)).attr("fill", "none").attr("stroke", COLORS.historical).attr("stroke-width", 1).attr("opacity", 0.35);
+      plot.append("path").datum(past.smooth).attr("d", gen(1950, 2014)).attr("fill", "none").attr("stroke", COLORS.historical).attr("stroke-width", 2.2);
       svg.append("text").attr("class", "lab").attr("x", x(1953)).attr("y", y(X.base_days) + 24).style("font-weight", 700).text("Historical");
       const labels = [];
       lines.filter(l => show.has(l.id)).forEach(l => {
-        svg.append("path").datum(l.raw).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 1).attr("opacity", 0.35);
-        svg.append("path").datum(l.smooth).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 2.2);
+        plot.append("path").datum(l.raw).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 1).attr("opacity", 0.35);
+        plot.append("path").datum(l.smooth).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 2.2);
         const lastI = d3.max(l.smooth.map((v, i) => (v != null ? i : -1)));
         labels.push({ y: y(l.smooth[lastI]), text: w < 480 ? `≈${Math.round(end[l.id])}/yr` : `${LABELS[l.id]}: ≈${Math.round(end[l.id])}/yr`, color: COLORS[l.id] });
       });
       labels.sort((a, b) => a.y - b.y).forEach((d, i, arr) => { if (i && d.y - arr[i - 1].y < 16) d.y = arr[i - 1].y + 16; });
-      svg.selectAll(".end").data(labels).join("text").attr("class", "lab end").attr("x", w - m.r + 6).attr("y", d => d.y + 4)
-        .style("fill", d => d.color).style("font-weight", 700).text(d => d.text);
+      endLabels = svg.selectAll(".end").data(labels).join("text").attr("class", "lab end").attr("x", w - m.r + 6).attr("y", d => d.y + 4)
+        .style("fill", d => d.color).style("font-weight", 700).style("opacity", played ? 1 : 0).text(d => d.text);
       svg.append("text").attr("class", "lab").attr("x", m.l + 4).attr("y", y(X.base_days) - 5).style("fill", "#5e5d59")
         .text(`${Math.round(X.base_days)} days/yr = hottest 5% of baseline days`);
 
@@ -126,6 +138,13 @@
     }
     draw();
     new ResizeObserver(draw).observe(document.getElementById("heatLine").parentElement);
+    onFirstView(document.getElementById("heatLine"), animate => {
+      played = true;
+      if (!animate) return draw();
+      // draw the lines from 1950 to 2100, then fade in the end labels
+      clipRect.transition().duration(2600).ease(d3.easeCubicInOut).attr("width", fullW);
+      endLabels.transition().delay(2300).duration(500).style("opacity", 1);
+    });
   }
 
   // ===== Section 3: where heat and rain change =====
@@ -177,20 +196,45 @@
     }
 
     function legend() {
-      const lw = 420, lh = 44, svg = d3.select("#xlegend").html("").append("svg").attr("viewBox", `0 0 ${lw} ${lh}`)
+      const lw = 480, lh = 44, svg = d3.select("#xlegend").html("").append("svg").attr("viewBox", `0 0 ${lw} ${lh}`)
         .attr("width", lw).attr("height", lh).style("width", `${lw}px`).style("max-width", "100%").style("height", "auto");
       const dom = state.v === "heat" ? [0, 250] : [-100, 100];
-      const sx = d3.scaleLinear().domain(dom).range([10, 290]);
+      const sx = d3.scaleLinear().domain(dom).range([22, 302]);
       const grad = svg.append("defs").append("linearGradient").attr("id", "xgrad");
       d3.range(0, 1.001, 0.05).forEach(t => grad.append("stop").attr("offset", t).attr("stop-color", colorOf(dom[0] + t * (dom[1] - dom[0]))));
-      svg.append("rect").attr("x", 10).attr("y", 4).attr("width", 280).attr("height", 11).attr("rx", 2).attr("fill", "url(#xgrad)");
+      svg.append("rect").attr("x", 22).attr("y", 4).attr("width", 280).attr("height", 11).attr("rx", 2).attr("fill", "url(#xgrad)");
       const ticks = state.v === "heat" ? [0, 50, 100, 150, 200, 250] : [-100, -50, 0, 50, 100];
       svg.append("g").attr("class", "axis").attr("transform", "translate(0,15)")
         .call(d3.axisBottom(sx).tickValues(ticks).tickSize(4).tickFormat(d => state.v === "heat" ? (d === 250 ? "250+" : d) : `${d > 0 ? "+" : ""}${d}%`))
         .call(g => g.select(".domain").remove());
       if (state.v === "rain") {
-        svg.append("rect").attr("x", 306).attr("y", 4).attr("width", 18).attr("height", 11).attr("rx", 2).attr("fill", MISSING);
-        svg.append("text").attr("class", "lab").attr("x", 330).attr("y", 14).text("Too dry to measure");
+        svg.append("rect").attr("x", 322).attr("y", 4).attr("width", 18).attr("height", 11).attr("rx", 2).attr("fill", MISSING);
+        svg.append("text").attr("class", "lab").attr("x", 346).attr("y", 14).text("Too dry to measure");
+      }
+    }
+
+    // Annotations that point readers to the key finding on each map
+    function label(text, lonlat, align = "left") {
+      const [px, py] = projection(lonlat);
+      ctx.font = `600 ${w < 600 ? 10 : 12}px system-ui, sans-serif`;
+      ctx.textAlign = align; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(255,255,255,.92)"; ctx.lineWidth = 4; ctx.strokeText(text, px, py);
+      ctx.fillStyle = "#1c1c1a"; ctx.fillText(text, px, py);
+    }
+    function annotate(path) {
+      if (state.v === "heat") {
+        // dashed lines at the Tropics of Cancer and Capricorn
+        ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = "rgba(28,28,26,.75)"; ctx.lineWidth = 1.1;
+        [23.5, -23.5].forEach(la => {
+          ctx.beginPath(); path({ type: "LineString", coordinates: d3.range(-180, 180.1, 2).map(lo => [lo, la]) }); ctx.stroke();
+        });
+        ctx.restore();
+        const t = landMean(la => Math.abs(la) < 23.5).mean;
+        label(`Tropics: +${Math.round(t)} extreme heat days a year on land`, [-178, 28.5]);
+        label("Steady climates pass their old extremes fastest", [-178, -28.5]);
+      } else {
+        label("Mediterranean: fewer heavy-rain days", [-4, 47]);
+        label("Central Chile: fewer", [-68, -38], "left");
       }
     }
 
@@ -202,6 +246,7 @@
       const path = d3.geoPath(projection, ctx);
       ctx.beginPath(); path(land); ctx.strokeStyle = "rgba(20,20,20,.7)"; ctx.lineWidth = 0.7; ctx.stroke();
       ctx.beginPath(); path({ type: "Sphere" }); ctx.strokeStyle = "#bdbbb4"; ctx.lineWidth = 1; ctx.stroke();
+      annotate(path);
       legend();
       const span = `${X.future.join("–")} vs ${X.baseline.join("–")}, ${LABELS[state.sc]}`;
       if (state.v === "heat") {
@@ -241,9 +286,10 @@
     const state = { name: rows.some(r => r.name === "Southern California") ? "Southern California" : rows[0].name };
     const yMax = d3.max(rows, r => d3.max(SCEN, sc => d3.max(r[sc])));
     const refresh = segmented("#regionPick", rows.map(r => ({ id: r.name, label: r.name })), d => d.id === state.name,
-      d => { state.name = d.id; draw(); });
+      d => { state.name = d.id; draw(true); });
+    let played = false;
 
-    function draw() {
+    function draw(animate = false) {
       refresh(); hideTip();
       const r = rows.find(d => d.name === state.name);
       const a = r.ssp245.at(-1), b = r.ssp585.at(-1);
@@ -251,7 +297,7 @@
       document.getElementById("regionHeadline").innerHTML =
         `<b>In the 2090s, ${r.name} sees about ${Math.round(a)} extreme heat days a year under SSP2-4.5 and ${Math.round(b)} under SSP5-8.5</b>, ` +
         `${(b / a).toFixed(1)}× as many with high emissions.`;
-      const w = width("regionBars"), narrow = w < 480, h = 320, m = { t: narrow ? 46 : 34, r: 16, b: 30, l: 40 };
+      const w = width("regionBars"), narrow = w < 480, h = 320, m = { t: narrow ? 64 : 34, r: 16, b: 30, l: 40 };
       const svg = d3.select("#regionBars").attr("viewBox", `0 0 ${w} ${h}`).attr("height", h);
       svg.selectAll("*").remove();
       const x0 = d3.scaleBand().domain(decades).range([m.l, w - m.r]).padding(0.25);
@@ -262,24 +308,32 @@
       svg.append("g").attr("class", "axis").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x0).tickFormat(d => `${d}s`));
       svg.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
       const bars = decades.flatMap((d, i) => SCEN.map(sc => ({ d, sc, v: r[sc][i] })));
-      svg.append("g").selectAll("path").data(bars).join("path")
+      const barPath = (d, v) => { // rounded top corners, square at the baseline
+        const x = x0(d.d) + x1(d.sc), bw = x1.bandwidth(), top = y(v), base = y(0), rr = Math.max(0, Math.min(4, bw / 2, base - top));
+        return `M${x},${base}V${top + rr}Q${x},${top} ${x + rr},${top}H${x + bw - rr}Q${x + bw},${top} ${x + bw},${top + rr}V${base}Z`;
+      };
+      const barSel = svg.append("g").selectAll("path").data(bars).join("path")
         .attr("fill", d => COLORS[d.sc])
-        .attr("d", d => { // rounded top corners, square at the baseline
-          const x = x0(d.d) + x1(d.sc), bw = x1.bandwidth(), top = y(d.v), base = y(0), rr = Math.min(4, bw / 2, base - top);
-          return `M${x},${base}V${top + rr}Q${x},${top} ${x + rr},${top}H${x + bw - rr}Q${x + bw},${top} ${x + bw},${top + rr}V${base}Z`;
-        })
+        .attr("d", d => barPath(d, played && !animate ? d.v : 0));
+      if (played && animate) barSel.transition().duration(700).delay((_, i) => i * 35).ease(d3.easeCubicOut)
+        .attrTween("d", d => t => barPath(d, d.v * t));
+      barSel
         .on("mousemove", (evt, d) => showTip(evt, `<b>${d.d}s, ${LABELS[d.sc]}</b><br>${d.v.toFixed(0)} extreme heat days a year`))
         .on("mouseleave", hideTip);
       svg.append("line").attr("x1", m.l).attr("x2", w - m.r).attr("y1", y(r.base)).attr("y2", y(r.base)).attr("stroke", "#5e5d59").attr("stroke-dasharray", "2 3");
-      svg.append("text").attr("class", "lab").attr("x", m.l + 4).attr("y", y(r.base) - 5).style("fill", "#5e5d59").text(`${X.baseline.join("–")} level (${Math.round(r.base)} days)`);
       const lg = svg.append("g").attr("transform", `translate(${m.l},4)`);
       SCEN.forEach((sc, i) => {
         lg.append("rect").attr("x", narrow ? 0 : i * 200).attr("y", narrow ? i * 18 : 0).attr("width", 12).attr("height", 12).attr("rx", 2).attr("fill", COLORS[sc]);
         lg.append("text").attr("class", "lab").attr("x", (narrow ? 0 : i * 200) + 17).attr("y", (narrow ? i * 18 : 0) + 10).text(`${LABELS[sc]} (${DESC[sc].toLowerCase()})`);
       });
+      // the dotted baseline is explained in the legend so its label never collides with the bars
+      const bx = narrow ? 0 : 400, by = narrow ? 36 : 0;
+      lg.append("line").attr("x1", bx).attr("x2", bx + 12).attr("y1", by + 6).attr("y2", by + 6).attr("stroke", "#5e5d59").attr("stroke-dasharray", "2 3");
+      lg.append("text").attr("class", "lab").attr("x", bx + 17).attr("y", by + 10).text(`${X.baseline.join("–")} level (${Math.round(r.base)} days)`);
     }
     draw();
-    new ResizeObserver(draw).observe(document.getElementById("regionBars").parentElement);
+    new ResizeObserver(() => draw()).observe(document.getElementById("regionBars").parentElement);
+    onFirstView(document.getElementById("regionBars"), animate => { played = true; draw(animate); });
   }
 
   // ===== Section 5: the hot tail in California =====
