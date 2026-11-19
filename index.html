@@ -10,9 +10,10 @@
 <nav class="toc" aria-label="Sections">
   <a href="#s-threshold">1 · Crossing 2°C</a>
   <a href="#s-heat">2 · Heat days</a>
-  <a href="#s-map">3 · Where it changes</a>
-  <a href="#s-regions">4 · Regions</a>
-  <a href="#s-tail">5 · Why</a>
+  <a href="#s-tail">3 · Why</a>
+  <a href="#s-map">4 · Where it changes</a>
+  <a href="#s-regions">5 · Emissions</a>
+  <a href="#s-takeaway">Takeaway</a>
   <a href="#s-writeup">Writeup</a>
 </nav>
 <main>
@@ -21,6 +22,11 @@
     <h1>Hotter Days, Heavier Downpours</h1>
     <p class="lede">How climate change is projected to change extreme heat and extreme rainfall, from the global 2°C target down to the days people actually live through.</p>
     <p class="muted small">This page explores how a few degrees of global warming can lead to many more extreme hot days and heavy rainfall days. Scroll through the five sections and interact with each chart to see how the changes differ by place and by emissions scenario. All projections come from CMIP6 climate model simulations.</p>
+    <div class="hook" aria-label="Extreme heat days a year on land: about 18 in 1985 to 2014, about 103 by 2071 to 2100 under high emissions">
+      <div class="hook-num"><span class="big" data-count="18">18</span><span class="hook-label">extreme heat days a year on land, 1985–2014</span></div>
+      <div class="hook-arrow" aria-hidden="true">→</div>
+      <div class="hook-num hot"><span class="big" data-count="103">103</span><span class="hook-label">by 2071–2100 with high emissions</span></div>
+    </div>
   </header>
 
   <!-- ===== Section 1: Project 3 crossing map ===== -->
@@ -28,7 +34,7 @@
     <div class="step-text">
       <p class="step-num">1</p>
       <h2>When will your part of the world cross 2°C?</h2>
-      <p>Climate targets are global averages, but warming does not arrive everywhere at once. Pick a warming level and an emissions scenario, then find a place you know.</p>
+      <p>Climate goals like "stay below 2°C" are about the global average, and warming does not reach every place at the same time. Pick a warming level and an emissions scenario, then find a place you know. Many places on land cross 2°C years before the world as a whole does.</p>
     </div>
     <p id="subtitle" class="muted"></p>
 
@@ -60,12 +66,14 @@
     <p id="method" class="muted small"></p>
   </section>
 
+  <p class="bridge">So what does 2°C actually feel like, day to day?</p>
+
   <!-- ===== Section 2: heat days over time ===== -->
   <section id="s-heat" class="story">
     <div class="step-text">
       <p class="step-num">2</p>
-      <h2>A 2°C average means many more extreme days</h2>
-      <p>We call a day "extreme heat" when it is hotter than that place's hottest 5% of days from <span class="fill" data-fact="baseline">1985–2014</span>. By definition, that is about <b class="fill" data-fact="baseDays">18</b> days a year in the baseline. Hover the chart to see how the count climbs.</p>
+      <h2>But nobody lives through an average</h2>
+      <p>2°C sounds small, but people experience weather one day at a time. From here on we compare against <span class="fill" data-fact="baseline">1985–2014</span> instead of 1850–1900, because the question changes from "how much has the planet warmed?" to "how different will days be from what people are used to now?" We call a day "extreme heat" when it is hotter than that place's hottest 5% of days from that period, which by definition is about <b class="fill" data-fact="baseDays">18</b> days a year. Hover the chart to see how the count climbs.</p>
     </div>
     <div class="controls">
       <div class="control"><span class="label">Show</span><div id="heatScen" class="segmented" role="group" aria-label="Scenarios shown"></div></div>
@@ -78,12 +86,35 @@
     </figure>
   </section>
 
+  <p class="bridge">Why does a little warming add so many hot days?</p>
+
+  <!-- ===== Section 5: why the tail grows ===== -->
+  <section id="s-tail" class="story">
+    <div class="step-text">
+      <p class="step-num">3</p>
+      <h2>Why a few degrees adds so many extreme days</h2>
+      <p>These curves show every summer daily high in California, averaged over the state. When the whole curve slides a few degrees warmer, the slice past the old "hottest 5%" line grows much faster than the average does. Drag the line to try other cutoffs and see that the effect holds for any threshold.</p>
+    </div>
+    <div class="controls">
+      <label class="slider control"><span class="label">Cutoff: <b id="tailValue"></b></span>
+        <input id="tailCut" type="range" step="0.25" aria-label="Temperature cutoff"></label>
+      <button id="tailReset" type="button">Reset to old top 5%</button>
+    </div>
+    <p id="tailHeadline" class="headline" aria-live="polite"></p>
+    <figure class="panel">
+      <h3>California summer daily highs (June–August)</h3>
+      <svg id="tailChart"></svg>
+    </figure>
+  </section>
+
+  <p class="bridge">So where does it hit hardest?</p>
+
   <!-- ===== Section 3: where heat and rain change ===== -->
   <section id="s-map" class="story">
     <div class="step-text">
-      <p class="step-num">3</p>
-      <h2>Where extremes change the most</h2>
-      <p>Switch between heat and heavy rain. Places with steady climates pass their old extremes fastest, and rain does not change the same way everywhere.</p>
+      <p class="step-num">4</p>
+      <h2>The biggest jump is not where you might expect</h2>
+      <p>You might guess the poles or deserts would see the biggest change. Instead, tropical land gains the most extreme heat days, because places with steady temperatures have a narrow range of "normal" and even a little warming pushes many days past their old top 5%. Switch to heavy rain: most land gets more heavy-rain days, but some regions, like the Mediterranean, get fewer.</p>
     </div>
     <div class="controls">
       <div class="control"><span class="label">Extreme</span><div id="mapVar" class="segmented" role="group" aria-label="Type of extreme"></div></div>
@@ -97,12 +128,14 @@
     </figure>
   </section>
 
+  <p class="bridge">And how much of this is still up to us?</p>
+
   <!-- ===== Section 4: regions ===== -->
   <section id="s-regions" class="story">
     <div class="step-text">
-      <p class="step-num">4</p>
-      <h2>Every region heats up, but emissions decide by how much</h2>
-      <p>Choose a region to see its extreme heat days by decade under both scenarios. The scale stays the same, so regions can be compared.</p>
+      <p class="step-num">5</p>
+      <h2>So emissions decide how many extreme days we get</h2>
+      <p>Every region gains extreme heat days under both scenarios. Until about the 2050s the two paths look similar, but after that they split, and by the 2090s high emissions bring roughly 1.6 to 2 times as many extreme heat days. Choose a region to compare. The scale stays the same across regions.</p>
     </div>
     <div class="controls">
       <div class="control"><span class="label">Region</span><div id="regionPick" class="segmented" role="group" aria-label="Region"></div></div>
@@ -115,23 +148,12 @@
     <p id="xmethod" class="muted small"></p>
   </section>
 
-  <!-- ===== Section 5: why the tail grows ===== -->
-  <section id="s-tail" class="story">
+  <!-- ===== Takeaway ===== -->
+  <section id="s-takeaway" class="story takeaway">
     <div class="step-text">
-      <p class="step-num">5</p>
-      <h2>Why a few degrees means so many more extreme days</h2>
-      <p>These curves show every summer daily high in California, averaged over the state. When the whole curve slides a few degrees warmer, the slice past the old "hottest 5%" line grows much faster than the average does. Drag the line to try other cutoffs.</p>
+      <h2>The takeaway</h2>
+      <p>A small change in the global average turns into a large change in the days people actually live through. On land, extreme heat days go from about 18 a year in 1985–2014 to about 59 under a middle-road scenario and about 103 under high emissions by 2071–2100. The places with the steadiest climates, like the tropics, feel it the most. And the gap between those two futures depends on how much we emit.</p>
     </div>
-    <div class="controls">
-      <label class="slider control"><span class="label">Cutoff: <b id="tailValue"></b></span>
-        <input id="tailCut" type="range" step="0.25" aria-label="Temperature cutoff"></label>
-      <button id="tailReset" type="button">Reset to old top 5%</button>
-    </div>
-    <p id="tailHeadline" class="headline" aria-live="polite"></p>
-    <figure class="panel">
-      <h3>California summer daily highs (June–August)</h3>
-      <svg id="tailChart"></svg>
-    </figure>
   </section>
 
   <!-- ===== Prototype writeup ===== -->
@@ -149,5 +171,26 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <script src="crossing.js"></script>
 <script src="extremes.js"></script>
+<script>
+// Scroll fade-in and the count-up hook. Only runs when JS works, so content is never hidden without it.
+(() => {
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const items = document.querySelectorAll("main > section, .bridge");
+  if (!still && "IntersectionObserver" in window) {
+    items.forEach(el => el.classList.add("reveal"));
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }), { rootMargin: "0px 0px -10% 0px" });
+    items.forEach(el => io.observe(el));
+  }
+  document.querySelectorAll("[data-count]").forEach(el => {
+    const end = +el.dataset.count;
+    if (still) return;
+    const t0 = performance.now(), dur = 1400;
+    const step = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+})();
+</script>
 </body>
 </html>
