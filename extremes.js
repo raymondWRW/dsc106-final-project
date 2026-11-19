@@ -70,10 +70,11 @@
     function draw() {
       refresh();
       const shown = SCEN.filter(sc => show.has(sc));
-      document.getElementById("heatHeadline").innerHTML =
-        `<b>Land goes from about ${Math.round(X.base_days)} extreme heat days a year</b> in ${X.baseline.join("–")} to ` +
-        shown.map(sc => `${Math.round(end[sc])} under ${LABELS[sc]}`).join(" and ") + ` by ${X.future.join("–")}.`;
-      const w = width("heatLine"), h = 340, m = { t: 14, r: w < 480 ? 64 : 120, b: 28, l: 44 };
+      document.getElementById("heatHeadline").innerHTML = shown.length
+        ? `<b>Land goes from about ${Math.round(X.base_days)} extreme heat days a year</b> in ${X.baseline.join("–")} to ` +
+          shown.map(sc => `${Math.round(end[sc])} under ${LABELS[sc]}`).join(" and ") + ` by ${X.future.join("–")}.`
+        : `<b>Land averages about ${Math.round(X.base_days)} extreme heat days a year</b> in ${X.baseline.join("–")}, by definition.`;
+      const w = width("heatLine"), h = 340, m = { t: 14, r: w < 480 ? 64 : 176, b: 28, l: 44 };
       const svg = d3.select("#heatLine").attr("viewBox", `0 0 ${w} ${h}`).attr("height", h);
       svg.selectAll("*").remove();
       const x = d3.scaleLinear().domain(d3.extent(years)).range([m.l, w - m.r]);
@@ -99,7 +100,7 @@
         svg.append("path").datum(l.raw).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 1).attr("opacity", 0.35);
         svg.append("path").datum(l.smooth).attr("d", gen(2014, 2100)).attr("fill", "none").attr("stroke", COLORS[l.id]).attr("stroke-width", 2.2);
         const lastI = d3.max(l.smooth.map((v, i) => (v != null ? i : -1)));
-        labels.push({ y: y(l.smooth[lastI]), text: w < 480 ? `≈${Math.round(end[l.id])}/yr` : `${LABELS[l.id]}: ≈${Math.round(end[l.id])}/yr`, color: COLORS[l.id] });
+        labels.push({ y: y(l.smooth[lastI]), text: w < 480 ? `≈${Math.round(end[l.id])}/yr` : `${LABELS[l.id]}: ≈${Math.round(end[l.id])}/yr (${(end[l.id] / X.base_days).toFixed(1)}×)`, color: COLORS[l.id] });
       });
       labels.sort((a, b) => a.y - b.y).forEach((d, i, arr) => { if (i && d.y - arr[i - 1].y < 16) d.y = arr[i - 1].y + 16; });
       svg.selectAll(".end").data(labels).join("text").attr("class", "lab end").attr("x", w - m.r + 6).attr("y", d => d.y + 4)
@@ -126,6 +127,14 @@
     }
     draw();
     new ResizeObserver(draw).observe(document.getElementById("heatLine").parentElement);
+
+    // Story steps: show no future line, then one scenario, then both.
+    const showOnly = ids => () => { show.clear(); ids.forEach(id => show.add(id)); draw(); };
+    if (window.Story) {
+      Story.register("heat.base", showOnly([]));
+      Story.register("heat.mid", showOnly(["ssp245"]));
+      Story.register("heat.high", showOnly(SCEN));
+    }
   }
 
   // ===== Section 3: where heat and rain change =====
@@ -232,6 +241,14 @@
     canvas.addEventListener("mouseleave", hideTip);
     draw();
     new ResizeObserver(() => { if (layout()) draw(); }).observe(canvas.parentElement);
+
+    // Story steps: heat under high emissions, heat under the middle road, then rain.
+    const showMap = (v, sc) => () => { state.v = v; state.sc = sc; draw(); };
+    if (window.Story) {
+      Story.register("map.heat585", showMap("heat", "ssp585"));
+      Story.register("map.heat245", showMap("heat", "ssp245"));
+      Story.register("map.rain", showMap("rain", "ssp585"));
+    }
   }
 
   // ===== Section 4: regions by decade =====
@@ -272,6 +289,11 @@
         .on("mouseleave", hideTip);
       svg.append("line").attr("x1", m.l).attr("x2", w - m.r).attr("y1", y(r.base)).attr("y2", y(r.base)).attr("stroke", "#5e5d59").attr("stroke-dasharray", "2 3");
       svg.append("text").attr("class", "lab").attr("x", m.l + 4).attr("y", y(r.base) - 5).style("fill", "#5e5d59").text(`${X.baseline.join("–")} level (${Math.round(r.base)} days)`);
+      // Callout on the last decade: the gap between the two paths is the part that is up to us
+      const last = decades.length - 1, gap = Math.round(r.ssp585[last] - r.ssp245[last]);
+      svg.append("text").attr("class", "lab").attr("x", x0(decades[last]) + x0.bandwidth()).attr("y", y(Math.max(r.ssp245[last], r.ssp585[last])) - 8)
+        .attr("text-anchor", "end").style("font-weight", 700).style("paint-order", "stroke").style("stroke", "#fff").style("stroke-width", 3)
+        .text(`+${gap} days from our choices`);
       const lg = svg.append("g").attr("transform", `translate(${m.l},4)`);
       SCEN.forEach((sc, i) => {
         lg.append("rect").attr("x", narrow ? 0 : i * 200).attr("y", narrow ? i * 18 : 0).attr("width", 12).attr("height", 12).attr("rx", 2).attr("fill", COLORS[sc]);
@@ -280,6 +302,14 @@
     }
     draw();
     new ResizeObserver(draw).observe(document.getElementById("regionBars").parentElement);
+
+    // Story steps: each one picks a region (skipped if that region is not in the data).
+    const pick = name => () => { if (rows.some(r => r.name === name)) { state.name = name; draw(); } };
+    if (window.Story) {
+      Story.register("region.socal", pick("Southern California"));
+      Story.register("region.amazon", pick("Amazon"));
+      Story.register("region.med", pick("Mediterranean"));
+    }
   }
 
   // ===== Section 5: the hot tail in California =====
@@ -330,6 +360,10 @@
       g.append("line").attr("x1", x(cut)).attr("x2", x(cut)).attr("y1", m.t - 4).attr("y2", h - m.b).attr("stroke", "#1c1c1a").attr("stroke-width", 1.5).attr("stroke-dasharray", "4 3");
       g.append("rect").attr("x", x(cut) - 12).attr("width", 24).attr("y", m.t - 4).attr("height", h - m.b - m.t + 4).attr("fill", "transparent");
       g.append("circle").attr("cx", x(cut)).attr("cy", h - m.b).attr("r", 7).attr("fill", "#1c1c1a").attr("stroke", "#fff").attr("stroke-width", 2);
+      const flip = x(cut) > w - m.r - 140;   // keep the label inside the chart near the right edge
+      g.append("text").attr("class", "lab").attr("x", x(cut) + (flip ? -7 : 7)).attr("y", m.t + 12).attr("text-anchor", flip ? "end" : "start")
+        .style("font-weight", 700).style("paint-order", "stroke").style("stroke", "#fff").style("stroke-width", 3).style("pointer-events", "none")
+        .text(Math.abs(cut - thr) < 0.13 ? "old top 5% cutoff" : `${cToF(cut).toFixed(0)}°F cutoff`);
       g.call(d3.drag().on("drag", evt => setCut(x.invert(evt.x))));
     }
     function setCut(v) {
@@ -340,6 +374,12 @@
     document.getElementById("tailReset").addEventListener("click", () => { cut = thr; slider.value = thr; draw(); });
     draw();
     new ResizeObserver(draw).observe(document.getElementById("tailChart").parentElement);
+
+    // Story steps: the old top-5% cutoff, then a much hotter one. The last step leaves the line where it is.
+    if (window.Story) {
+      Story.register("tail.old", () => setCut(thr));
+      Story.register("tail.hot", () => setCut(thr + 3));
+    }
   }
 
   // Highlight the current section in the top menu

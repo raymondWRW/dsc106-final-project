@@ -19,119 +19,264 @@
   <header class="hero">
     <p class="kicker">DSC 106 Final Project · Prototype</p>
     <h1>Hotter Days, Heavier Downpours</h1>
-    <p class="lede">How climate change is projected to change extreme heat and extreme rainfall, from the global 2°C target down to the days people actually live through.</p>
+    <p class="lede">If you’re 20 today, you’ll probably live through the year your city crosses 2°C. Let’s find out when, and what that does to an ordinary summer day.</p>
     <p class="muted small">Draft text. [Team: rewrite the story text on this page in your own words.]</p>
+    <p class="scroll-cue" aria-hidden="true">Scroll to begin ↓</p>
   </header>
 
   <!-- ===== Section 1: Project 3 crossing map ===== -->
   <section id="s-threshold" class="story">
-    <div class="step-text">
+    <header class="story-head">
       <p class="step-num">1</p>
       <h2>When will your part of the world cross 2°C?</h2>
-      <p>Climate targets are global averages, but warming does not arrive everywhere at once. Pick a warming level and an emissions scenario, then find a place you know.</p>
+    </header>
+
+    <div class="scrolly">
+      <div class="steps">
+        <article class="step" data-act="cross.world">
+          <p class="step-progress" role="img" aria-label="Step 1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></p>
+          <h3>Let’s start with a number you’ve probably heard: 2°C.</h3>
+          <p>It’s the line that climate goals are built around. So when does San Diego cross it? Take a guess, and we’ll check it against the climate models.</p>
+          <div class="guess">
+            <label for="guessYear">My guess: <b id="guessVal">2045</b></label>
+            <input id="guessYear" type="range" min="2025" max="2090" step="1" value="2045" aria-label="Year I think San Diego crosses 2 degrees">
+            <button id="guessBtn" type="button">Lock it in</button>
+            <div id="guessResult" hidden aria-live="polite"></div>
+          </div>
+        </article>
+        <article class="step" data-act="cross.early">
+          <p class="step-progress" role="img" aria-label="Step 2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></p>
+          <h3>Is San Diego special? Not really.</h3>
+          <p>Chicago gets there in <b data-x="chi.year">…</b>, <b data-x="chi.lead">…</b> years before the world does. Land warms faster than the ocean, and the darkest cells on the map are the places that arrive first.</p>
+          <p class="step-next">So is anyone late?</p>
+        </article>
+        <article class="step" data-act="cross.late">
+          <p class="step-progress" role="img" aria-label="Step 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></p>
+          <h3>Some places arrive late.</h3>
+          <p>Mumbai doesn’t cross until <b data-x="mum.year">…</b>, <b data-x="mum.lag">…</b> years after the world average. Same planet, same emissions, a very different timeline.</p>
+          <p class="step-next">Which raises a bigger question: does any of this depend on us?</p>
+        </article>
+        <article class="step" data-act="cross.high">
+          <p class="step-progress" role="img" aria-label="Step 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></p>
+          <h3>It does. Here’s Mumbai again, with emissions kept high.</h3>
+          <p>Switch to the high-emissions path and its crossing year jumps from <b data-x="mum.year">…</b> to <b data-x="mum.high">…</b>. Nothing about the place changed. Only what we emit.</p>
+          <p class="step-next">If more emissions mean sooner, can fewer mean never?</p>
+        </article>
+        <article class="step" data-act="cross.low">
+          <p class="step-progress" role="img" aria-label="Step 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></p>
+          <h3>Sometimes, yes.</h3>
+          <p>With strong cuts, places like Sydney stay under 2°C through about 2090. They are the gray cells on the map.</p>
+          <p class="step-next">But crossing 2°C is only an average. What about the days you actually live through?</p>
+        </article>
+      </div>
+
+      <div class="stage blind">
+        <p id="guessPrompt" class="headline">Make a guess on the left, and we’ll show you the answer.</p>
+        <p id="headline" class="headline" aria-live="polite"></p>
+        <figure class="map-wrap">
+          <canvas id="map" aria-label="World map of the year each place crosses the selected warming level"></canvas>
+          <div id="legend"></div>
+          <figcaption class="muted">Hover for details. Click anywhere to select that place.</figcaption>
+        </figure>
+        <section class="controls" aria-label="Controls for the crossing map">
+          <div class="control"><span class="label">Warming level</span><div id="thresholds" class="segmented" role="group" aria-label="Warming level"></div></div>
+          <div class="control"><span class="label">Emissions scenario</span><div id="scenarios" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
+          <div class="control"><label class="label" for="place">Place</label><select id="place"></select></div>
+        </section>
+      </div>
     </div>
-    <p id="subtitle" class="muted"></p>
 
-    <section class="controls" aria-label="Controls for the crossing map">
-      <div class="control"><span class="label">Warming level</span><div id="thresholds" class="segmented" role="group" aria-label="Warming level"></div></div>
-      <div class="control"><span class="label">Emissions scenario</span><div id="scenarios" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
-      <div class="control"><label class="label" for="place">Place</label><select id="place"></select></div>
-    </section>
-
-    <p id="headline" class="headline" aria-live="polite"></p>
-
-    <section class="layout">
-      <figure class="map-wrap">
-        <canvas id="map" aria-label="World map of the year each place crosses the selected warming level"></canvas>
-        <div id="legend"></div>
-        <figcaption class="muted">Hover for details. Click anywhere to select that place.</figcaption>
-      </figure>
-      <figure class="panel">
-        <h3 id="rangeTitle"></h3>
-        <p class="muted small0">Dots are the model median. Bars run from the earliest to the latest model.</p>
-        <svg id="range"></svg>
-      </figure>
-    </section>
-
-    <section class="panel wide">
-      <h3 id="lineTitle"></h3>
-      <svg id="line"></svg>
-    </section>
-    <p id="method" class="muted small"></p>
+    <div class="explore">
+      <h3 class="explore-title">Now try your own city</h3>
+      <p id="subtitle" class="muted small0"></p>
+      <p class="muted small0">The charts below follow the place and scenario chosen above: how much the climate models disagree, and how local warming compares with the global mean.</p>
+      <section class="layout even">
+        <figure class="panel">
+          <h3 id="rangeTitle"></h3>
+          <p class="muted small0">Dots are the model median. Bars run from the earliest to the latest model.</p>
+          <svg id="range"></svg>
+        </figure>
+        <figure class="panel">
+          <h3 id="lineTitle"></h3>
+          <svg id="line"></svg>
+        </figure>
+      </section>
+      <details class="more"><summary>More details: data and methods</summary><p id="method" class="muted small"></p></details>
+    </div>
   </section>
 
   <!-- ===== Section 2: heat days over time ===== -->
   <section id="s-heat" class="story">
-    <div class="step-text">
+    <header class="story-head">
       <p class="step-num">2</p>
       <h2>A 2°C average means many more extreme days</h2>
-      <p>We call a day "extreme heat" when it is hotter than that place's hottest 5% of days from <span class="fill" data-fact="baseline">1985–2014</span>. By definition, that is about <b class="fill" data-fact="baseDays">18</b> days a year in the baseline. Hover the chart to see how the count climbs.</p>
+    </header>
+
+    <div class="scrolly">
+      <div class="steps">
+        <article class="step" data-act="heat.base">
+          <p class="step-progress" role="img" aria-label="Step 1 of 3"><i class="on"></i><i></i><i></i></p>
+          <h3>Averages hide the days you actually feel.</h3>
+          <p>So let’s count hot days instead. For every place, we find its hottest 5% of days from <span class="fill" data-fact="baseline">1985–2014</span>. Anything hotter counts as an extreme heat day. By definition that is about <b class="fill" data-fact="baseDays">18</b> a year, roughly two and a half weeks.</p>
+          <p class="step-next">So how many do we get as the world warms?</p>
+        </article>
+        <article class="step" data-act="heat.mid">
+          <p class="step-progress" role="img" aria-label="Step 2 of 3"><i class="on"></i><i class="on"></i><i></i></p>
+          <h3>On the middle road, the count keeps climbing.</h3>
+          <p>Hover the chart to read any year. The bold line smooths out the year-to-year noise.</p>
+          <p class="step-next">That sounds manageable. Now turn up the emissions.</p>
+        </article>
+        <article class="step" data-act="heat.high">
+          <p class="step-progress" role="img" aria-label="Step 3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></p>
+          <h3>Now keep emissions high.</h3>
+          <p>The two paths pull apart, and the gap between the lines is what our choices are worth. Try switching each one on and off.</p>
+          <p class="step-next">That is the average across all land. Is every place hit equally?</p>
+        </article>
+      </div>
+
+      <div class="stage">
+        <p id="heatHeadline" class="headline" aria-live="polite"></p>
+        <figure class="panel">
+          <h3>Extreme heat days per year, land average</h3>
+          <p class="muted small0">Bold lines are 11-year rolling averages; faint lines show individual years.</p>
+          <svg id="heatLine"></svg>
+        </figure>
+        <div class="controls">
+          <div class="control"><span class="label">Show</span><div id="heatScen" class="segmented" role="group" aria-label="Scenarios shown"></div></div>
+        </div>
+      </div>
     </div>
-    <div class="controls">
-      <div class="control"><span class="label">Show</span><div id="heatScen" class="segmented" role="group" aria-label="Scenarios shown"></div></div>
-    </div>
-    <p id="heatHeadline" class="headline" aria-live="polite"></p>
-    <figure class="panel">
-      <h3>Extreme heat days per year, land average</h3>
-      <p class="muted small0">Bold lines are 11-year rolling averages; faint lines show individual years.</p>
-      <svg id="heatLine"></svg>
-    </figure>
   </section>
 
   <!-- ===== Section 3: where heat and rain change ===== -->
   <section id="s-map" class="story">
-    <div class="step-text">
+    <header class="story-head">
       <p class="step-num">3</p>
       <h2>Where extremes change the most</h2>
-      <p>Switch between heat and heavy rain. Places with steady climates pass their old extremes fastest, and rain does not change the same way everywhere.</p>
+    </header>
+
+    <div class="scrolly">
+      <div class="steps">
+        <article class="step" data-act="map.heat585">
+          <p class="step-progress" role="img" aria-label="Step 1 of 3"><i class="on"></i><i></i><i></i></p>
+          <h3>Not even close.</h3>
+          <p>This map shows how many <i>more</i> extreme heat days a year each place gets by 2071–2100 under high emissions. The tropics gain the most. Where temperatures barely vary, even a little warming pushes most days past the old threshold.</p>
+          <p class="step-next">That is high emissions. How much of it could we avoid?</p>
+        </article>
+        <article class="step" data-act="map.heat245">
+          <p class="step-progress" role="img" aria-label="Step 2 of 3"><i class="on"></i><i class="on"></i><i></i></p>
+          <h3>Switch to the middle road.</h3>
+          <p>Compare the colors with the last map. How much of the change is still there?</p>
+          <p class="step-next">So far we have only counted hot days. Does rain behave the same way?</p>
+        </article>
+        <article class="step" data-act="map.rain">
+          <p class="step-progress" role="img" aria-label="Step 3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></p>
+          <h3>Rain plays by different rules.</h3>
+          <p>A heavy-rain day is one in the wettest 5% of a place’s rainy days. Green means more of them, brown means fewer, and gray is too dry to measure. Some places get more downpours and some get fewer, so there is no single global story.</p>
+          <p class="step-next">Let’s zoom in on a region and watch it change, decade by decade.</p>
+        </article>
+      </div>
+
+      <div class="stage">
+        <p id="mapHeadline" class="headline" aria-live="polite"></p>
+        <figure class="map-wrap solo">
+          <canvas id="xmap" aria-label="World map of the change in extreme days"></canvas>
+          <div id="xlegend"></div>
+          <figcaption id="xcaption" class="muted"></figcaption>
+        </figure>
+        <div class="controls">
+          <div class="control"><span class="label">Extreme</span><div id="mapVar" class="segmented" role="group" aria-label="Type of extreme"></div></div>
+          <div class="control"><span class="label">Emissions scenario</span><div id="mapScen" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
+        </div>
+      </div>
     </div>
-    <div class="controls">
-      <div class="control"><span class="label">Extreme</span><div id="mapVar" class="segmented" role="group" aria-label="Type of extreme"></div></div>
-      <div class="control"><span class="label">Emissions scenario</span><div id="mapScen" class="segmented" role="group" aria-label="Emissions scenario"></div></div>
-    </div>
-    <p id="mapHeadline" class="headline" aria-live="polite"></p>
-    <figure class="map-wrap solo">
-      <canvas id="xmap" aria-label="World map of the change in extreme days"></canvas>
-      <div id="xlegend"></div>
-      <figcaption id="xcaption" class="muted"></figcaption>
-    </figure>
   </section>
 
   <!-- ===== Section 4: regions ===== -->
   <section id="s-regions" class="story">
-    <div class="step-text">
+    <header class="story-head">
       <p class="step-num">4</p>
       <h2>Every region heats up, but emissions decide by how much</h2>
-      <p>Choose a region to see its extreme heat days by decade under both scenarios. The scale stays the same, so regions can be compared.</p>
+    </header>
+
+    <div class="scrolly">
+      <div class="steps">
+        <article class="step" data-act="region.socal">
+          <p class="step-progress" role="img" aria-label="Step 1 of 3"><i class="on"></i><i></i><i></i></p>
+          <h3>Start close to home: Southern California.</h3>
+          <p>Each pair of bars is one decade, with the middle road in orange and high emissions in red. The dotted line is the baseline.</p>
+          <p class="step-next">Is every region like this?</p>
+        </article>
+        <article class="step" data-act="region.amazon">
+          <p class="step-progress" role="img" aria-label="Step 2 of 3"><i class="on"></i><i class="on"></i><i></i></p>
+          <h3>No. The Amazon has it worst.</h3>
+          <p>Of the five regions here, it gains the most extreme heat days under high emissions. Steady climates have the narrowest range of “normal,” so they pass it first. The scale stays fixed as you switch regions, so you can compare.</p>
+          <p class="step-next">Every region gains days. How many of them are our choice?</p>
+        </article>
+        <article class="step" data-act="region.med">
+          <p class="step-progress" role="img" aria-label="Step 3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></p>
+          <h3>Look at the last decade.</h3>
+          <p>The distance between the orange and red bars is the difference our emissions make. Try the other regions and compare the gap.</p>
+          <p class="step-next">One last puzzle: why does a few degrees add so many extreme days?</p>
+        </article>
+      </div>
+
+      <div class="stage">
+        <p id="regionHeadline" class="headline" aria-live="polite"></p>
+        <figure class="panel">
+          <h3 id="regionTitle"></h3>
+          <svg id="regionBars"></svg>
+        </figure>
+        <div class="controls">
+          <div class="control"><span class="label">Region</span><div id="regionPick" class="segmented" role="group" aria-label="Region"></div></div>
+        </div>
+      </div>
     </div>
-    <div class="controls">
-      <div class="control"><span class="label">Region</span><div id="regionPick" class="segmented" role="group" aria-label="Region"></div></div>
-    </div>
-    <p id="regionHeadline" class="headline" aria-live="polite"></p>
-    <figure class="panel">
-      <h3 id="regionTitle"></h3>
-      <svg id="regionBars"></svg>
-    </figure>
-    <p id="xmethod" class="muted small"></p>
+    <details class="more"><summary>More details: data and methods</summary><p id="xmethod" class="muted small"></p></details>
   </section>
 
   <!-- ===== Section 5: why the tail grows ===== -->
   <section id="s-tail" class="story">
-    <div class="step-text">
+    <header class="story-head">
       <p class="step-num">5</p>
       <h2>Why a few degrees means so many more extreme days</h2>
-      <p>These curves show every summer daily high in California, averaged over the state. When the whole curve slides a few degrees warmer, the slice past the old "hottest 5%" line grows much faster than the average does. Drag the line to try other cutoffs.</p>
+    </header>
+
+    <div class="scrolly">
+      <div class="steps">
+        <article class="step" data-act="tail.old">
+          <p class="step-progress" role="img" aria-label="Step 1 of 3"><i class="on"></i><i></i><i></i></p>
+          <h3>Here is the trick behind every chart you’ve seen.</h3>
+          <p>Each curve shows how California’s summer days are spread out, from cool to hot. The dashed line is the old “hottest 5%” cutoff, and the shaded slice past it is the share of days beyond that line.</p>
+          <p class="step-next">Now slide the whole curve warmer.</p>
+        </article>
+        <article class="step" data-act="tail.hot">
+          <p class="step-progress" role="img" aria-label="Step 2 of 3"><i class="on"></i><i class="on"></i><i></i></p>
+          <h3>A small slide, a big slice.</h3>
+          <p>When the curve shifts a few degrees warmer, the slice past a hot cutoff grows much faster than the average does. Look at the shaded share for the hottest cutoffs.</p>
+          <p class="step-next">Does it matter where we draw the line?</p>
+        </article>
+        <article class="step" data-act="tail.free">
+          <p class="step-progress" role="img" aria-label="Step 3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></p>
+          <h3>Draw it wherever you like.</h3>
+          <p>Drag the dashed line or use the slider, and reset to return to the old top 5%. Whatever cutoff you pick, the tail grows faster than the average.</p>
+          <p class="step-next">That is the whole story: a few degrees on average, many more extreme days, and a gap we can still shrink.</p>
+        </article>
+      </div>
+
+      <div class="stage">
+        <p id="tailHeadline" class="headline" aria-live="polite"></p>
+        <figure class="panel">
+          <h3>California summer daily highs (June–August)</h3>
+          <svg id="tailChart"></svg>
+        </figure>
+        <div class="controls">
+          <label class="slider control"><span class="label">Cutoff: <b id="tailValue"></b></span>
+            <input id="tailCut" type="range" step="0.25" aria-label="Temperature cutoff"></label>
+          <button id="tailReset" type="button">Reset to old top 5%</button>
+        </div>
+      </div>
     </div>
-    <div class="controls">
-      <label class="slider control"><span class="label">Cutoff: <b id="tailValue"></b></span>
-        <input id="tailCut" type="range" step="0.25" aria-label="Temperature cutoff"></label>
-      <button id="tailReset" type="button">Reset to old top 5%</button>
-    </div>
-    <p id="tailHeadline" class="headline" aria-live="polite"></p>
-    <figure class="panel">
-      <h3>California summer daily highs (June–August)</h3>
-      <svg id="tailChart"></svg>
-    </figure>
   </section>
 
   <!-- ===== Prototype writeup ===== -->
@@ -147,6 +292,7 @@
 </main>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="story.js"></script>
 <script src="crossing.js"></script>
 <script src="extremes.js"></script>
 </body>

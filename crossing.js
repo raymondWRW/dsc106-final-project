@@ -14,7 +14,9 @@ const lonName = v => `${Math.abs(v).toFixed(1)}°${v >= 0 ? "E" : "W"}`;
 const yearText = y => (y ? `around ${y}` : "not by about 2090");
 
 const SCENARIO_COLORS = { ssp126: "#2a78d6", ssp245: "#e08a1e", ssp370: "#7a5195", ssp585: "#b2182b" };
-const state = { scenario: "ssp245", threshold: "2", cell: null, name: "" };
+const BORN = 2006;   // the story follows someone who is 20 in 2026
+// blind = the answer is hidden until the reader locks in a guess (step 1)
+const state = { scenario: "ssp245", threshold: "2", cell: null, name: "", blind: true, guessed: false };
 let D, nLat, nLon, projection, cells, land, mapW, mapH;
 
 const canvas = document.getElementById("map");
@@ -83,6 +85,50 @@ function init() {
   layoutMap();
   new ResizeObserver(() => { layoutMap(); render(); }).observe(canvas.parentElement);
   render();
+
+  // Numbers quoted in the story text come from the data, so the words always match the charts.
+  const key = level => D.thresholdKeys.find(t => +t === level);
+  const placeYear = (name, scenario, level) => {
+    const p = D.places.find(d => d.name === name);
+    return crossing(scenario, key(level), "median", nearest(D.lat, p.lat), nearest(D.lon, p.lon));
+  };
+  const worldYear = (scenario, level) => D.global_crossing[scenario][key(level)][0];
+  const sd = placeYear("San Diego", "ssp245", 2), world = worldYear("ssp245", 2);
+  const chi = placeYear("Chicago", "ssp245", 2), mum = placeYear("Mumbai", "ssp245", 2), mumHigh = placeYear("Mumbai", "ssp585", 2);
+  const facts = { "chi.year": chi, "chi.lead": world - chi, "mum.year": mum, "mum.lag": mum - world, "mum.high": mumHigh };
+  document.querySelectorAll("[data-x]").forEach(el => {
+    const v = facts[el.dataset.x];
+    if (Number.isFinite(v)) el.textContent = v;
+  });
+
+  // Step 1 asks for a guess before showing San Diego's answer.
+  const gYear = document.getElementById("guessYear"), gVal = document.getElementById("guessVal");
+  const gBtn = document.getElementById("guessBtn"), gOut = document.getElementById("guessResult");
+  if (gYear) {
+    gYear.addEventListener("input", () => { gVal.textContent = gYear.value; });
+    gBtn.addEventListener("click", () => {
+      const guess = +gYear.value, diff = guess - sd, n = Math.abs(diff);
+      const how = diff === 0 ? "Right on the money." : `${n} year${n === 1 ? "" : "s"} too ${diff > 0 ? "late" : "early"}.`;
+      gOut.innerHTML = `<p>You guessed <b>${guess}</b>. ${how} San Diego crosses 2°C around <b>${sd}</b>, when someone who is 20 today would be about ${sd - BORN}. The world as a whole gets there around <b>${world}</b>.</p>` +
+        `<p class="step-next">Is San Diego special?</p>`;
+      gOut.hidden = false; gYear.disabled = true; gBtn.disabled = true;
+      state.guessed = true; state.blind = false; render();
+    });
+  }
+
+  // Story steps (see story.js): each one sets a warming level, a scenario and a place.
+  const act = (name, level, scenario, place) => window.Story && Story.register(name, () => {
+    state.threshold = D.thresholdKeys.find(t => +t === level);
+    state.scenario = scenario;
+    selectPlace(D.places.find(p => p.name === place));
+    state.blind = name === "cross.world" && !state.guessed;   // only step 1 hides the answer
+    render();
+  });
+  act("cross.world", 2, "ssp245", "San Diego");
+  act("cross.early", 2, "ssp245", "Chicago");
+  act("cross.late", 2, "ssp245", "Mumbai");
+  act("cross.high", 2, "ssp585", "Mumbai");
+  act("cross.low", 2, "ssp126", "Sydney");
 }
 
 function layoutMap() {
@@ -124,6 +170,14 @@ function drawMap() {
     ctx.beginPath(); ctx.arc(x, y, 6, 0, 2 * Math.PI);
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3.5; ctx.stroke();
     ctx.strokeStyle = "#111"; ctx.lineWidth = 1.6; ctx.stroke();
+    // Name the selected place on the map. The year is left off while the reader is still guessing.
+    const yr = crossing(state.scenario, state.threshold, "median", state.cell.i, state.cell.j);
+    const txt = state.blind ? state.name : `${state.name} · ${yr ? yr : "not by 2090"}`;
+    ctx.font = "600 12px system-ui, sans-serif"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    const flip = x + 12 + ctx.measureText(txt).width > mapW - 4;
+    ctx.textAlign = flip ? "right" : "left";
+    ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.lineWidth = 4; ctx.strokeText(txt, flip ? x - 12 : x + 12, y);
+    ctx.fillStyle = "#111"; ctx.fillText(txt, flip ? x - 12 : x + 12, y);
   }
 }
 
@@ -260,5 +314,6 @@ function render() {
   d3.selectAll("#thresholds button").attr("aria-pressed", d => d === state.threshold);
   const named = D.places.some(p => p.name === state.name);
   document.getElementById("place").value = named ? state.name : "";
+  document.querySelector("#s-threshold .stage").classList.toggle("blind", state.blind);
   drawMap(); drawRange(); drawLine(); drawHeadline();
 }

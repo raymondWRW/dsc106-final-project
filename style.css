@@ -76,3 +76,64 @@ svg { display: block; width: 100%; }
 .slider input { width: 100%; accent-color: var(--ink); }
 #tailReset { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 44px; align-self: flex-end; }
 #tailChart { touch-action: none; }
+
+/* ===== Scrollytelling: narrative steps on the left, sticky chart on the right ===== */
+.scroll-cue { margin: 18px 0 0; font-size: 14px; color: var(--muted); }
+.story-head { max-width: 68ch; }
+.story-head h2 { font-size: 26px; margin: 0; line-height: 1.2; }
+.scrolly { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 32px; align-items: start; margin-top: 12px; }
+.steps { padding-bottom: 12vh; }
+.step { min-height: 62vh; display: flex; flex-direction: column; justify-content: center; padding: 20px 0 20px 16px;
+  border-left: 3px solid var(--line); opacity: .4; transition: opacity .25s, border-color .25s; }
+.step.is-active { opacity: 1; border-left-color: var(--ink); }
+.step h3 { font-size: 21px; line-height: 1.25; margin: 0 0 8px; }
+.step p { margin: 0 0 8px; }
+.step-kicker { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px !important; }
+.stage { position: sticky; top: 56px; min-width: 0; }
+.stage .headline { min-height: 3em; margin-bottom: 8px; }
+.stage .controls { margin: 12px 0 0; }
+.stage .map-wrap.solo { max-width: none; }
+.explore { margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--line); }
+.explore-title { font-size: 20px; margin: 0 0 4px; }
+.layout.even { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; }
+@media (max-width: 860px) {
+  .scrolly { grid-template-columns: 1fr; gap: 8px; }
+  .stage { position: static; order: -1; }
+  .step { min-height: 0; opacity: 1; padding: 10px 0 10px 12px; }
+  .steps { padding-bottom: 0; }
+  .layout.even { grid-template-columns: 1fr; }
+}
+
+/* ===== Question-driven steps: question, answer, why it matters, and the next question ===== */
+.step-why { font-size: 14px; color: var(--muted); margin: 6px 0 10px !important; }
+.step-why b { color: var(--ink); }
+.step-next { font-weight: 600; margin: 4px 0 0 !important; }
+.step.is-active .step-next { color: #b2182b; }
+
+/* ===== Editorial voice: bigger type, progress dots, a guess prompt, and "More details" panels ===== */
+.step h3 { font-size: 24px; line-height: 1.2; letter-spacing: -0.01em; }
+.step p { font-size: 17px; line-height: 1.5; }
+.step-progress { display: flex; gap: 5px; margin: 0 0 12px !important; }
+.step-progress i { width: 18px; height: 4px; border-radius: 2px; background: var(--line); }
+.step-progress i.on { background: var(--ink); }
+.step.is-active .step-progress i.on { background: #b2182b; }
+.step-next { font-size: 17px !important; }
+
+.guess { margin: 12px 0 4px; padding: 14px 16px; background: #f3f2ee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; }
+.guess label { font-size: 15px; }
+.guess label b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.guess input[type="range"] { width: 100%; accent-color: #b2182b; }
+.guess button { align-self: flex-start; min-height: 44px; padding: 8px 18px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 600; }
+.guess button:disabled { opacity: .45; cursor: default; }
+.guess-result p, #guessResult p { margin: 0 0 8px; }
+
+/* while the reader is still guessing, show a prompt instead of the answer */
+.stage.blind #headline { display: none; }
+.stage:not(.blind) #guessPrompt { display: none; }
+#guessPrompt { color: var(--muted); }
+
+details.more { margin-top: 16px; max-width: 80ch; }
+details.more summary { cursor: pointer; font-size: 14px; color: var(--muted); }
+details.more summary:hover { color: var(--ink); }
+details.more p { margin-top: 8px; }
+.hero .lede { font-size: 22px; line-height: 1.4; max-width: 34ch; }
