@@ -76,3 +76,24 @@ svg { display: block; width: 100%; }
 .slider input { width: 100%; accent-color: var(--ink); }
 #tailReset { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 44px; align-self: flex-end; }
 #tailChart { touch-action: none; }
+.takeaway .step-text { background: #f3f2ee; border-left: 4px solid #b2182b; border-radius: 8px; padding: 18px 22px; max-width: 75ch; }
+.takeaway h2 { margin-top: 0; }
+/* ---- hook ---- */
+.hook { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin: 26px 0 8px; }
+.hook-num { display: flex; flex-direction: column; max-width: 210px; }
+.hook-num .big { font-size: clamp(56px, 9vw, 88px); font-weight: 800; line-height: 1; letter-spacing: -0.03em; color: #4a4a4a; font-variant-numeric: tabular-nums; }
+.hook-num.hot .big { color: #b2182b; }
+.hook-label { font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+.hook-arrow { font-size: 44px; color: #bdbbb4; }
+/* ---- transitions between sections ---- */
+.bridge { font-size: clamp(22px, 3.2vw, 30px); font-weight: 700; line-height: 1.25; text-align: center; max-width: 30ch; margin: 72px auto 8px; color: var(--ink); }
+/* ---- fade-in on scroll ---- */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+@media (max-width: 560px) {
+  .hook { flex-wrap: nowrap; gap: 12px; align-items: flex-start; }
+  .hook-num { flex: 1 1 0; }
+  .hook-num .big { font-size: 52px; }
+  .hook-arrow { font-size: 30px; margin-top: 8px; }
+  .hook-label { font-size: 13px; }
+}
